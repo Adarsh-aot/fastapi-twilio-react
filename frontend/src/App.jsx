@@ -165,6 +165,7 @@ const VideoCall = () => {
     participant.on('trackSubscribed', track => {
       if (track.kind === 'audio') {
         addRemoteAudioToStream(track);
+        console.log('Remote audio track added' + track);
       }
 
       if (videoContainerRef.current) {
@@ -184,11 +185,11 @@ const VideoCall = () => {
       prevParticipants.filter(p => p !== participant)
     );
 
-    participant.tracks.forEach((publication) => {
+    participant.tracks.forEach(publication => {
       if (publication.track && publication.track.kind === 'audio') {
         const track = publication.track.mediaStreamTrack;
         const streamTracks = combinedMediaStreamRef.current?.getTracks() || [];
-        const matchingTrack = streamTracks.find((t) => t.id === track.id);
+        const matchingTrack = streamTracks.find(t => t.id === track.id);
         if (matchingTrack) {
           combinedMediaStreamRef.current.removeTrack(matchingTrack);
         }
