@@ -101,7 +101,7 @@ const VideoCall = () => {
     setRemoteParticipants([]);
 
     try {
-      const response = await fetch('https://1262-106-222-238-176.ngrok-free.app /generate-token/', {
+      const response = await fetch('https://7fcf-2401-4900-1cdf-3a3a-9d07-59ee-d487-5aba.ngrok-free.app/generate-token/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ room_name: roomName, identity })
