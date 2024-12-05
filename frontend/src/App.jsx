@@ -171,12 +171,34 @@ const VideoCall = () => {
         videoContainerRef.current.appendChild(track.attach());
       }
     });
+
+    participant.tracks.forEach(publication => {
+      if (publication.isSubscribed && publication.track.kind === 'audio') {
+        addRemoteAudioToStream(publication.track);
+      }
+    });
   };
 
   const handleParticipantDisconnected = (participant) => {
     setRemoteParticipants(prevParticipants => 
       prevParticipants.filter(p => p !== participant)
     );
+
+    participant.tracks.forEach((publication) => {
+      if (publication.track && publication.track.kind === 'audio') {
+        const track = publication.track.mediaStreamTrack;
+        const streamTracks = combinedMediaStreamRef.current?.getTracks() || [];
+        const matchingTrack = streamTracks.find((t) => t.id === track.id);
+        if (matchingTrack) {
+          combinedMediaStreamRef.current.removeTrack(matchingTrack);
+        }
+      }
+    });
+
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      startRecording();
+    }
   };
 
   const leaveRoom = () => {
