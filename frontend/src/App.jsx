@@ -114,7 +114,7 @@ const VideoCall = () => {
       const { token } = await response.json();
 
       const roomInstance = await Video.connect(token, {
-        name: roomName,
+        name: roomName,   
         audio: true,
         video: { width: 640, height: 480 }
       });
