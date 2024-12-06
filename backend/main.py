@@ -48,6 +48,19 @@ class RoomTokenRequest(BaseModel):
 
 @app.post("/generate-token/")
 async def generate_token(request: RoomTokenRequest):
+    """
+    Generate a Twilio Access Token for a user to join a video room.
+
+    Args:
+        request (RoomTokenRequest): A request containing the room name and user
+            identity.
+
+    Returns:
+        dict: A JSON response containing the generated access token.
+
+    Raises:
+        HTTPException: If there is an error generating the token.
+    """
     try:
         # Retrieve Twilio credentials
         account_sid, api_key_sid, api_key_secret = get_twilio_credentials()
@@ -83,4 +96,4 @@ async def health_check():
     return {"status": "API is running"}
 
 # To run the server:
-# uvicorn main:app --reload --port 8001 
+# uvicorn main:app --reload --port 8001   
