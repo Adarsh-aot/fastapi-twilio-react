@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Video from 'twilio-video';
 
-const WS_URL = "ws://e165-202-88-244-71.ngrok-free.app/ws";
+const WS_URL = "wss://e165-202-88-244-71.ngrok-free.app/ws";
 
 const VideoCall = () => {
   const [roomName, setRoomName] = useState('');
