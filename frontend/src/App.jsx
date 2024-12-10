@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Video from 'twilio-video';
 
-const WS_URL = "wss://e165-202-88-244-71.ngrok-free.app/ws";
+const WS_URL = "ws://localhost:8000/ws";
 
 const VideoCall = () => {
   const [roomName, setRoomName] = useState('');
@@ -184,7 +184,7 @@ const VideoCall = () => {
     console.log("joinRoom");
     try {
       // Generate token from backend
-      const response = await fetch('https://e165-202-88-244-71.ngrok-free.app/api/generate-token/', {
+      const response = await fetch('http://localhost:8000/api/generate-token/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ room_name: roomName, identity })
