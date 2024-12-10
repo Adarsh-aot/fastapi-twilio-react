@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Video from 'twilio-video';
 
-const WS_URL = `wss://api.aiscribe.quipohealth.com/ws`;
+const WS_URL = "ws://e165-202-88-244-71.ngrok-free.app/ws";
 
 const VideoCall = () => {
   const [roomName, setRoomName] = useState('');
@@ -23,7 +23,7 @@ const VideoCall = () => {
     };
   }, [room]);
 
-  const setupWebSocket = () => {
+  const setupWebSocket = (cb) => {
     console.log("setupWebSocket");
     const newSocket = new WebSocket(WS_URL);
     
@@ -47,10 +47,10 @@ const VideoCall = () => {
       setIsWebSocketReady(false);
     };
 
-    setSocket(newSocket);
+    cb(newSocket);
   };
 
-  const sendAudioToWebSocket = (audioTrack) => {
+  const sendAudioToWebSocket = (audioTrack,_socket) => {
     try {
         const mediaStream = new MediaStream();
         mediaStream.addTrack(audioTrack.mediaStreamTrack);
@@ -66,10 +66,11 @@ const VideoCall = () => {
         mediaRecorder.ondataavailable = (event) => {
             console.log("on data");
             if (event.data.size > 0) {
-                console.log("Captured audio chunk size:", event.data.size);
-                if (isWebSocketReady) {
-                    socket.send(event.data);
-                    console.log("Audio data sent to WebSocket");
+              console.log("event.data.size", event.data.size);
+                console.log("Captured audio chunk", event.data);
+                if (true) {
+                    _socket?.send(event.data);
+                    console.log("Audio data sent to WebSocket",socket);
                 } else {
                     console.warn("WebSocket is not ready, cannot send data");
                 }
@@ -91,27 +92,32 @@ const VideoCall = () => {
     }
 };
 
-  const handleTrackPublication = (trackPublication, participant) => {
+  const handleTrackPublication = (trackPublication, participant,_socket) => {
     console.log("handleTrackPublication");
     try {
       if (trackPublication.track) {
         console.log("trackPublication.track", trackPublication.track);
-        displayTrack(trackPublication.track, participant);
+        displayTrack(trackPublication.track, participant,_socket);
       }
       console.log("trackPublication hanleTrackPublication", trackPublication);
-      trackPublication.on("subscribed", (track) => displayTrack(track, participant));
+
+      trackPublication.on("subscribed", (track) => {
+        console.log("track", track);
+        displayTrack(track, participant,_socket)
+    });
       console.log("handleTrackPublication on subscribed", trackPublication);
     } catch (error) {
       console.error("Error handling track publication:", error);
     }
   };
 
-  const displayTrack = (track, participant) => {
+  const displayTrack = (track, participant,_socket) => {
     console.log("displayTrack");
     try {
       
       if (track.kind === 'audio') {
-        const mediaRecorder = sendAudioToWebSocket(track);
+        console.log("track.kind", track.kind);
+        const mediaRecorder = sendAudioToWebSocket(track,_socket);
         if (mediaRecorder) {
           console.log("mediaRecorder displayTrack Function", mediaRecorder);
           mediaRecordersRef.current.set(participant.identity, mediaRecorder);
@@ -178,7 +184,7 @@ const VideoCall = () => {
     console.log("joinRoom");
     try {
       // Generate token from backend
-      const response = await fetch('http://localhost:8000/api/generate-token/', {
+      const response = await fetch('http://localhost:8001/generate-token/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ room_name: roomName, identity })
@@ -198,8 +204,10 @@ const VideoCall = () => {
       setRoom(roomInstance);
 
       // Set up WebSocket connection
-      setupWebSocket();
-      console.log("roomInstance", roomInstance);
+      setupWebSocket((_socket)=>{
+        console.log("Socket",_socket);
+        // setSocket(_socket);
+        console.log("roomInstance", roomInstance);
 
       // Attach local video tracks
       roomInstance.localParticipant.videoTracks.forEach(publication => {
@@ -224,7 +232,7 @@ const VideoCall = () => {
 
       roomInstance.localParticipant.tracks.forEach(publication => {
         console.log("publication", publication);
-        handleTrackPublication(publication, roomInstance.localParticipant);
+        handleTrackPublication(publication, roomInstance.localParticipant,_socket);
       })
       // Handle remote participants
       roomInstance.participants.forEach(participant => {
@@ -233,11 +241,11 @@ const VideoCall = () => {
 
         participant.tracks.forEach(trackPublication => {
           console.log("trackPublication", trackPublication);  
-          handleTrackPublication(trackPublication, participant);
+          handleTrackPublication(trackPublication, participant,_socket);
         });
 
         participant.on("trackPublished", trackPublication => {
-          handleTrackPublication(trackPublication, participant);
+          handleTrackPublication(trackPublication, participant,_socket);
           console.log("Remote participant joined:", participant.identity);
         });
       });
@@ -249,11 +257,11 @@ const VideoCall = () => {
 
         participant.tracks.forEach(trackPublication => {
           console.log("Participant new connected  trackPublication", trackPublication);
-          handleTrackPublication(trackPublication, participant);
+          handleTrackPublication(trackPublication, participant,_socket);
         });
 
         participant.on("trackSubscribed", trackPublication => {
-          console.clear();
+          
           console.log("participant trackPublication", trackPublication);
           handleTrackPublication(trackPublication, participant);
           console.log("Remote participant joined:", participant.identity);
@@ -270,6 +278,8 @@ const VideoCall = () => {
           mediaRecordersRef.current.delete(participant.identity);
         }
       });
+      });
+      
 
       
 
