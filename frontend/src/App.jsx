@@ -184,7 +184,7 @@ const VideoCall = () => {
     console.log("joinRoom");
     try {
       // Generate token from backend
-      const response = await fetch('http://localhost:8001/generate-token/', {
+      const response = await fetch('https://e165-202-88-244-71.ngrok-free.app/api/generate-token/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ room_name: roomName, identity })
